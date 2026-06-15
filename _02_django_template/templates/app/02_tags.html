@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tags</title>
+</head>
+<body>
+    <h1>Tags</h1>
+    <a href="{% url 'app:index' %}">Back to Index</a>
+
+    <h2>조건문</h2>
+    {% if age >= 20 %}
+    <p>당신은 성인입니다.</p>
+    {% elif age >= 10 %}
+    <p>당신은 청소년입니다.</p>
+    {% else %}
+    <p>당신은 어린이입니다.</p>
+    {% endif %}
+
+    {% if is_authenticated %}
+    <p>{{ name }}님, 환영합니다.</p>
+    {% else %}
+    <p>로그인 해주세요.</p>
+    {% endif %}
+
+    <h2>반복문</h2>
+    <ul>
+        {% for fruit in fruits %}
+        <li>{{ fruit }}</li>
+        {% endfor %}
+    </ul>
+
+    <table>
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>아이디</th>
+                <th>이름</th>
+                <th>나이</th>
+                <th>결혼여부</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.age }}</td>
+                    <!-- <td>{{ user.married }}</td> -->
+                    <td>
+                        <input 
+                            type="checkbox" 
+                            id="married{{ forloop.counter0 }}" 
+                            onclick="return false;"
+                            {% if user.married %}checked{% endif %}
+                        >
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <th colspan="5">조회 된 회원이 없습니다.</th>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

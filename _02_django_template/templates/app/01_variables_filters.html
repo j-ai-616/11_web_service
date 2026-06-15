@@ -1,0 +1,49 @@
+{# django 한 줄 주석 #}
+
+{% comment %}
+여러 줄 주석
+여러 줄 주석
+Django Template의 모든 표현식은 Server 단에서 처리 후, 순수 HTML만 응답 메세지로 출력된다.
+{% endcomment %}
+<!-- HTML 주석 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>variables_filters</title>
+</head>
+<body>
+    <h1>variables_filters</h1>
+
+    <a href="{% url 'app:index' %}">Back to Index</a>
+
+    <h2>Variables</h2>
+    <p>제 이름은 {{ name }}입니다.</p>
+    <p>저는 {{ age }}살 입니다.</p>
+
+    <h2>Filter</h2>
+    <p>Filter는 주어진 변수에 대한 후처리를 담당한다.</p>
+    <p>제 이름은 {{ name|upper }}입니다.</p>
+    <p>저는 {{ age|add:1 }}살 입니다.</p>
+
+    {# settings.py 에서 LANGUAGE_CODE, TIME_ZONE 설정에 따라 날짜/시간 필터의 출력이 달라진다. #}
+    <p>오늘은 {{ today }} 입니다.</p>
+    <p>오늘은 {{ today|date:"Y/m/d (D) H:i:s" }} 입니다.</p>
+
+    {# now tag #}
+    <p>현재는 {% now "Y년 F d일 H:i:s" %} 입니다.</p>
+    
+    <h2>Variable Declaration</h2>
+    {% now "Y" as this_year %}
+    <p>올해는 {{ this_year }}년 입니다.</p>
+
+    {# with 블럭을 통해 변수 선언 가능 #}
+    {% with username='hong' useremail='hong@example.com' %}
+    <p>{{ username }}님, 반갑습니다. 이메일은 {{ useremail }}입니다.</p>
+    {% endwith %}
+
+    {# with 블럭을 벗어나면 해당 변수는 사용할 수 없다. (오류는 발생하지 않고 출력되지 않는다) #}
+    <p>{{ username }}님, 반갑습니다. 이메일은 {{ useremail }}입니다.</p>
+</body>
+</html>

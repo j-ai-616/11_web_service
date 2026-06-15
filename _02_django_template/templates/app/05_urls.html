@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>urls</title>
+</head>
+<body>
+    <h1>Urls</h1>
+
+    <h2>view_name으로 url 할당</h2>
+    <div>
+        <a href="{% url 'app:index' %}">app:index 페이지</a>
+    </div>
+
+    <h2>경로 변수 Path Variable</h2>
+    <!-- <ul>
+        <li><a href="/app/articles/1">뉴스 기사1</a></li>
+        <li><a href="/app/articles/2">뉴스 기사2</a></li>
+    </ul> -->
+    <ul>
+        <li><a href="{% url 'app:articles_detail' id=1 %}">뉴스 기사1</a></li>
+        <li><a href="{% url 'app:articles_detail' id=2 %}">뉴스 기사2</a></li>
+    </ul>
+
+    <!-- <ul>
+        <li><a href="/app/articles/finance/1">경제뉴스</a></li>
+        <li><a href="/app/articles/technology/2">기술뉴스</a></li>
+    </ul> -->
+
+    <ul>
+        <li><a href="{% url 'app:articles_category' category='finance' id=1 %}">경제 뉴스1</a></li>
+        <li><a href="{% url 'app:articles_category' category='technology' id=2 %}">기술 뉴스2</a></li>
+    </ul>
+
+    <h2>Query String</h2>
+    <a href="{% url 'app:search' %}?q=점심&lang=en">/app/search?q=점심&lang=en</a>
+
+    <div>
+        {% if id %}
+        <p>요청 뉴스 기사 ID : {{ id }}</p>
+        {% endif %}
+
+        {% if category %}
+        <p>요청 뉴스 기사 Category : {{ category }}</p>
+        {% endif %}
+
+        {% if q %}
+        <p>요청 query : {{ q }}</p>
+        {% endif %}
+
+        {% if lang %}
+        <p>요청 lang : {{ lang }}</p>
+        {% endif %}
+    </div>
+
+</body>
+</html>

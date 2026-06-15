@@ -1,0 +1,18 @@
+{# app/static 하위에 정적 리소스 추가한 뒤 settings.py에서 STATICFILES_DIRS 설정 #}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>staticfiles</title>
+    <link rel="stylesheet" href="{% static 'css/global.css' %}">
+</head>
+<body>
+    <h1>Static Files</h1>
+
+    <img src="{% static 'images/cat.jpg' %}" alt="고양이">
+
+    <script src="{% static 'js/global.js' %}"></script>
+</body>
+</html>
