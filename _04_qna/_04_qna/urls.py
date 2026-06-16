@@ -17,6 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,5 +26,11 @@ urlpatterns = [
     # 루트 경로로 접속하면 '/qna/' 경로로 이동시킨다.
     # permanent=False: 임시 리다이렉트(HTTP 302)
     # permanent=True: 영구 리다이렉트(HTTP 301) -> 브라우저 캐싱
-    path('', RedirectView.as_view(url='/qna/', permanent=False))
+    path('', RedirectView.as_view(url='/qna/', permanent=False)),
+    path('uauth/', include('uauth.urls'))
 ]
+
+# 개발 환경에서만 media 파일을 Django 개발 서버가 제공하도록 설정
+if settings.DEBUG:
+    # /media/로 시작하는 URL 요청이 오면 MEDIA_ROOT 폴더에서 해당 파일을 찾아 응답하게 설정
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

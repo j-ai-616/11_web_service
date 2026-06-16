@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'qna'
+    'qna',
+    'uauth'
 ]
 
 MIDDLEWARE = [
@@ -91,19 +92,27 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
+# 개발 편의를 위해 패스워드 검증 완화
 AUTH_PASSWORD_VALIDATORS = [
     {
+        # 사용자 이름과 유사한 패스워드 허용하지 않음
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
+        # 최소 길이 요구
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS' : {
+            'min_length' : 4, # 최소 길이 설정 (기본 값: 8)
+        }
     },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    # {
+    #     # 일반적으로 사용되는 패스워드 허용 되지 않음 (예: 'password', '12345678')
+    #     'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    # },
+    # {
+    #     # 숫자로만 이루어진 패스워드 허용 되지 않음
+    #     'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    # },
 ]
 
 
@@ -169,3 +178,10 @@ LOGGING = {
         },
     },
 }
+
+# 로그인 후 리다이렉트 URL 설정 (기본 값: /accounts/profile/)
+LOGIN_REDIRECT_URL = '/'    
+
+# 파일 업로드 관련 설정
+MEDIA_URL = '/media/'               # 사용자가 접근하는 URL 경로
+MEDIA_ROOT = BASE_DIR / 'media'     # 서버에 파일이 저장 되는 실제 폴더 경로

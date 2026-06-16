@@ -1,0 +1,24 @@
+{% extends "../layout/base.html" %}
+
+{% block content %}
+<div class="container my-3">
+    <form method="post">
+        {% csrf_token %}
+        {# 인증이 필요한 페이지 접근 시 우선 로그인 후 해당 페이지로 이동한다. #}
+        <input type="hidden" name="next" value="{{ next }}">
+        {# 아이디 또는 비밀번호 일치하지 않을 경우 발생하는 에러를 표시한다. #}
+        {% include "../layout/form_errors.html" %}
+        <div class="mb-3">
+            <label for="username">사용자ID</label>
+            <input type="text" class="form-control" name="username" id="username"
+                value="{{ form.username.value | default_if_none:'' }}">
+        </div>
+        <div class="mb-3">
+            <label for="password">비밀번호</label>
+            <input type="password" class="form-control" name="password" id="password"
+                value="{{ form.password.value | default_if_none:'' }}">
+        </div>
+        <button type="submit" class="btn btn-primary">로그인</button>
+    </form>
+</div>
+{% endblock %}

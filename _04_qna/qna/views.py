@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Question, Answer, QuestionForm
 from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
 
 def index(request):
     # DB에서 질문 목록 조회
@@ -12,7 +14,9 @@ def index(request):
     # 최신순 조회
     # questions = Question.objects.order_by('-created_at')
     # N + 1 이슈 해결: question 조회 시점에 answer도 함께 조회할 수 있도록 수정
-    questions = Question.objects.prefetch_related('answer').order_by('-created_at')
+    # questions = Question.objects.prefetch_related('answer').order_by('-created_at')
+    # question 조회 시점에 answer, author를 함께 조회할 수 있도록 수정
+    questions = Question.objects.prefetch_related('answer').select_related('author').order_by('-created_at')
 
     print(f'{ questions = }')
 
@@ -38,6 +42,7 @@ def question_detail(request, question_id):
         'answers' : answers
     })
 
+@login_required(login_url='uauth:login')
 def answer_create(request, question_id):
     # 답변 등록은 POST 요청일 때만 처리한다.
     if request.method != 'POST':
@@ -51,7 +56,8 @@ def answer_create(request, question_id):
 
     answer = Answer.objects.create(
         content=content,
-        question=question
+        question=question,
+        author=request.user
     )
 
     print(f'{question_id}번 질문에 대한 {answer.id}번 답변이 생성 되었습니다.')
@@ -76,17 +82,24 @@ def answer_delete(request, answer_id):
 
     return redirect('qna:question_detail', question_id=question_id)
 
-
+@login_required(login_url='uauth:login')
 def question_create(request):
-    if request.method == 'POST':
-        # POST 방식의 요청
+
+    if request.method == 'POST':    # POST 방식의 요청
         
         # 요청에 담긴 subject와 content가 model Question으로 옮겨지며 변환 됨
         form = QuestionForm(request.POST)
+
+        # 사용자 입력 값이 유효한 경우
         if form.is_valid():
-            # 사용자 입력 값이 유효한 경우
+            
             # 모델 변환 및 DB 저장
-            question = form.save()
+            # question = form.save()
+
+            # 질문 작성자 포함하여 DB 저장
+            question = form.save(commit=False)  # 모델 변환만 수행
+            question.author = request.user      # 현재 인증 된 사용자 
+            question.save()                     # DB 저장
 
             print(f'질문 {question.id}번이 등록 되었습니다.')
 
@@ -98,5 +111,23 @@ def question_create(request):
     else:
         # GET 방식의 요청
         form = QuestionForm()
+
+    return render(request, 'qna/question_form.html', {'form':form})
+
+@login_required(login_url='uauth:login')
+def question_modify(request, question_id):
+
+    # 원본 조회
+    question = Question.objects.get(id=question_id)
+
+    # 수정 권한 검사: 작성자 본인 또는 관리자에 한해 수정 가능
+    if request.user != question.author and not request.user.is_staff:
+        return HttpResponseForbidden('수정 권한이 없습니다.')
+    
+    if request.method == 'POST':
+        pass
+    else:
+        # 수정 화면 응답 시에는 원본 데이터를 넣고 폼 객체 생성
+        form = QuestionForm(instance=question)
 
     return render(request, 'qna/question_form.html', {'form':form})

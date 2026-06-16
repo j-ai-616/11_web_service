@@ -20,13 +20,30 @@
               <a class="nav-link" href="#">About</a>
           </li>
         </ul>
+        <!-- https://docs.djangoproject.com/ko/6.0/ref/contrib/auth/ -->
         <ul class="navbar-nav mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link" href="#">로그인</a>
-          </li>
-          <li class="nav-item">
-              <a class="nav-link" href="#">회원가입</a>
-          </li>
+          {# user 객체(django.contrib.auth) 를 선언 없이 사용할 수 있다. #}
+          {% if user.is_authenticated %}
+            <li class="nav-item">
+              <a clss="nav-link" href="#" title="{{ user.username }}">
+                {% if user.userdetail.profile %}
+                <img src="{{ user.userdetail.profile.url }}" class="rounded-circle" width="28" alt="프로필사진">
+                {% else %}
+                <img src="/media/profile/default.jpg" class="rounded-circle" width="28" alt="기본사진">
+                {% endif %}
+              </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'uauth:logout' %}">로그아웃</a>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'uauth:login' %}">로그인</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'uauth:signup' %}">회원가입</a>
+            </li>
+          {% endif %}
         </ul>
       </div>
   </div>

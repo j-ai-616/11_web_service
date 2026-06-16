@@ -1,0 +1,46 @@
+{% extends "../layout/base.html" %}
+
+{% block content %}
+<div class="container my-3">
+  <h5 class="my-3 border-bottom pb-2">회원가입</h5>
+  <!-- 
+    기본 인코딩 타입 : application/x-www-form-urlencoded
+    파일 데이터 전송 시 변경할 인코딩 타입 : multipart/form-data
+  -->
+  <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% include "../layout/form_errors.html" %}
+      <div class="mb-3">
+          <label for="username">사용자 이름</label>
+          <input type="text" class="form-control" name="username" id="username" value="{{ form.username.value | default_if_none:'' }}">
+          <sub id="username-feedback" class="feedback"></sub>
+      </div>
+      <div class="mb-3">
+          <label for="password1">비밀번호</label>
+          <input type="password" class="form-control" name="password1" id="password1" value="{{ form.password1.value | default_if_none:'' }}">
+      </div>
+      <div class="mb-3">
+          <label for="password2">비밀번호 확인</label>
+          <input type="password" class="form-control" name="password2" id="password2" value="{{ form.password2.value | default_if_none:'' }}">
+      </div>
+      <div class="mb-3">
+          <label for="email">이메일</label>
+          <input type="text" class="form-control" name="email" id="email" value="{{ form.email.value | default_if_none:'' }}">
+      </div>
+      <div class="mb-3">
+          <label for="birthday">생일</label>
+          <input type="date" class="form-control" name="birthday" id="birthday" value="{{ form.birthday.value | default_if_none:'' }}">
+      </div>
+      <div class="mb-3">
+          <label for="profile" class="form-label">프로필</label>
+          <input class="form-control" type="file" id="profile" name="profile">
+      </div>
+      <button type="submit" class="btn btn-primary">회원가입하기</button>
+  </form>
+</div>
+{% endblock content %}
+
+{% block script %}
+
+
+{% endblock script %}
