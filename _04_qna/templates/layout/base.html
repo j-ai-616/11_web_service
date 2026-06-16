@@ -21,6 +21,17 @@
 <!-- 본문 내용 -->
 <main>
     <div class="container">
+        <!-- message 표시 -->
+        {% if messages %}
+            {# https://getbootstrap.com/docs/5.3/components/alerts/#dismissing #}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} m-3 alert-dismissible" role="alert">
+                    <strong>{{ message.message }}</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
         {% block content %}
         
             {# 이부분은 매 페이지마다 각각 작성해야 합니다. #}

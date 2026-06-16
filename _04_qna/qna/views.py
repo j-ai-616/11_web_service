@@ -3,6 +3,8 @@ from .models import Question, Answer, QuestionForm
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
+from django.contrib import messages
+from django.urls import reverse
 
 def index(request):
     # DB에서 질문 목록 조회
@@ -65,21 +67,27 @@ def answer_create(request, question_id):
     # POST 요청 후에는 redirect 처리하여 새로고침 시 중복 등록을 방지한다.
     return redirect('qna:question_detail', question_id=question_id)
 
+@login_required(login_url='uauth:login')
 def answer_delete(request, answer_id):
     if request.method != 'POST':
         return redirect('qna:index')
 
     print(f'{answer_id = }')
-
     answer = get_object_or_404(Answer, id=answer_id)
-    question_id = answer.question.id
 
+    # 삭제 권한 검사
+    if request.user != answer.author and not request.user.is_staff:
+        messages.error(request, '삭제 권한이 없습니다.')
+        return redirect('qna:question_detail', question_id=question_id)
+
+    question_id = answer.question.id
     print(f'{question_id = }')
 
     answer.delete()
-
     print(f'{answer_id}번 답변이 삭제되었습니다.')
 
+    # 사용자 메세지 처리
+    messages.success(request, '답변을 정상적으로 삭제했습니다.')
     return redirect('qna:question_detail', question_id=question_id)
 
 @login_required(login_url='uauth:login')
@@ -125,9 +133,62 @@ def question_modify(request, question_id):
         return HttpResponseForbidden('수정 권한이 없습니다.')
     
     if request.method == 'POST':
-        pass
+        # 원본 객체에 요청을 통해 전달 된 subject, content 업데이트
+        form = QuestionForm(request.POST, instance=question)
+        if form.is_valid():
+            question = form.save()
+            return redirect('qna:question_detail', question_id=question.id)
     else:
         # 수정 화면 응답 시에는 원본 데이터를 넣고 폼 객체 생성
         form = QuestionForm(instance=question)
 
     return render(request, 'qna/question_form.html', {'form':form})
+
+# messages 프레임워크 레벨
+# messages.success()
+# messages.error()
+# messages.warning()
+# messages.info()
+@login_required(login_url='uauth:login')
+def question_delete(request, question_id):
+
+    # 원본
+    question = Question.objects.get(id=question_id)
+
+    # 삭제 권한 검사
+    if request.user != question.author and not request.user.is_staff:
+        # return HttpResponseForbidden('삭제 권한이 없습니다.')
+        messages.error(request, '삭제 권한이 없습니다.')
+        return redirect('qna:question_detail', question_id=question.id)
+    
+    question.delete()
+
+    return redirect('qna:index')
+
+# 답변 수정에 필요한 인증, 인가
+# 요청 값 꺼내 DB 저장, 응답 처리
+@login_required(login_url='uauth:login')
+def answer_modify(request, answer_id):
+    if request.method != 'POST':
+        return redirect('qna:index')
+    
+    # 원본 조회
+    answer = get_object_or_404(Answer, id=answer_id)
+    question_id = answer.question.id
+
+    # 수정 권한 검사
+    if request.user != answer.author and not request.user.is_staff:
+        messages.error(request, '해당 답변 수정 권한이 없습니다.')
+        return redirect('qna:question_detail', question_id=question_id)
+    
+    # 내용 수정
+    answer.content = request.POST.get('content')
+    answer.save()
+
+    # 사용자 메세지 처리
+    messages.success(request, '답변 수정이 완료되었습니다.')
+    # return redirect('qna:question_detail', question_id=question_id)
+
+    # 수정한 답변을 참조하는 위치로 응답하기
+    url = reverse('qna:question_detail', kwargs={'question_id' : question_id})
+    return redirect(f'{url}#answer_{answer.id}')
