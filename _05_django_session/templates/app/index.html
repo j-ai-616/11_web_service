@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Django Session & Cookie</title>
+</head>
+<body>
+    <h1>Django Session & Cookie</h1>
+    <!-- 
+        HTTP Stateless 무상태성
+        - http 모든 통신의 상태를 가지지 않는다.
+        - http 요청/응답은 독립적으로 처리된다.
+
+        HTTP 상태 저장 기술
+        - Session: 서버 측에 사용자 정보 저장
+        - Cookie: 클라이언트(브라우저) 측에 사용자 정보 저장
+    -->
+    {% if request.session.username %}
+        <section>
+            <h3>세션 정보 조회</h3>
+            <p>Hello, {{ request.session.username }}</p>
+            <p>포인트 : {{ request.session.point }}</p>
+            <p>확률 : {{ request.session.prob }}</p>
+            <p>만료여부 : {{ request.session.expired }}</p>
+            <p>{% for num in request.session.nums %} {{ num }} {% endfor %}</p>
+            <p>{% for key, value in request.session.data.items %} {{ key }}:{{value}} {% endfor %}</p>
+        </section>
+        <section>
+            <h3>세션 조작</h3>
+            <p>{{ request.session.favorite_color }}</p>
+            <form action="{% url 'app:modify_session' %}" method="post">
+                {% csrf_token %}
+                <button type="submit">세션 속성 추가/제거</button>
+            </form>
+            <form action="{% url 'app:delete_session' %}" method="post">
+                {% csrf_token %}
+                <button type="submit">세션 제거</button>
+            </form>  
+        </section>
+
+        <section>
+            <h3>쿠키 처리</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>이름</th>
+                        <th>값</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {# request.COOKIES 는 client가 이번 요청에 전송한 쿠키이다. #}
+                    {% for key, value in request.COOKIES.items %}
+                        <tr>
+                            <td>{{ key }}</td>
+                            <td>{{ value }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <h3>쿠키 설정</h3>
+            <form action="{% url 'app:set_cookie' %}" method="post">
+                {% csrf_token %}
+                <label for="cookie_name">쿠키 이름:</label>
+                <input type="text" id="cookie_name" name="cookie_name" required>
+                <label for="cookie_value">쿠키 값:</label>
+                <input type="text" id="cookie_value" name="cookie_value" required>
+                <button type="submit">쿠키 저장</button>
+            </form> 
+            <h3>쿠키 삭제</h3>
+            <form action="{% url 'app:delete_cookie' %}" method="post">
+                {% csrf_token %}
+                <label for="cookie_name">쿠키 이름:</label>
+                <input type="text" id="cookie_name" name="cookie_name" required>
+                <button type="submit">쿠키 삭제</button>
+            </form> 
+        </section>
+
+
+    {% else %}
+        <p>Hello, Guest!</p>
+        <form action="{% url 'app:set_session' %}" method="post">
+            {% csrf_token %}
+            <label for="username">이름 입력:</label>
+            <input type="text" id="username" name="username" required>
+            <button type="submit">이름 저장</button>
+        </form>  
+    {% endif %}  
+</body>
+</html>

@@ -19,9 +19,17 @@
                     {% endif %}
                 </div>
             </div>
-            {# 작성자 본인 또는 관리자에게만 수정/삭제 버튼 노출 #}
-            {% if request.user == question.author or request.user.is_staff %}
+            
             <div class="mt-3">
+                {# 질문 추천 #}
+                <a 
+                    href="#"
+                    data-uri="{% url 'qna:question_vote' question_id=question.id %}"
+                    class="btn btn-sm btn-outline-secondary recommand">
+                    추천 <span class="badge rounded-pill bg-success">{{ question.voters.count }}</span>
+                </a>
+                {# 작성자 본인 또는 관리자에게만 수정/삭제 버튼 노출 #}
+                {% if request.user == question.author or request.user.is_staff %}
                 <a href="{% url 'qna:question_modify' question_id=question.id %}" class="btn btn-sm btn-outline-secondary">수정</a>
             
                 <form 
@@ -33,9 +41,9 @@
                 {% csrf_token %}
                 <button class="btn-sm btn btn-outline-danger">삭제</button>
                 </form>
-            
+                {% endif %}
             </div>
-            {% endif %}
+            
         </div>
     </div>
     <div class="my-3">
@@ -59,6 +67,13 @@
                     </div>
                 </div>
                 <div class="mt-3">
+                    {# 질문 추천 #}
+                    <a 
+                        href="#"
+                        data-uri="{% url 'qna:answer_vote' answer_id=answer.id %}"
+                        class="btn btn-sm btn-outline-secondary recommand">
+                        추천 <span class="badge rounded-pill bg-success">{{ answer.voters.count }}</span>
+                    </a>
                 {% if user == answer.author or user.is_staff %}
                     <a
                         href="#"
@@ -135,6 +150,64 @@ document.answerCreateFrm.addEventListener('submit', e => {
     e.preventDefault();
 });
 {% endif %}
+
+// 추천 버튼 비동기 요청 (document 단위로 이벤트 설정)
+document.addEventListener('click', async (e) => {
+    const $recommandBtn = e.target.closest('.recommand');
+
+    // 추천 버튼이 아닌 곳을 클릭한 경우 아무 처리도 하지 않는다.
+    if(!$recommandBtn) {
+        return;
+    }
+    e.preventDefault();
+
+    {% if not user.is_authenticated %}
+    if(confirm('추천하려면 로그인을 먼저하셔야 합니다. 로그인 하시겠습니까?')) {
+        location.href = "{% url 'uauth:login' %}?next={{ request.path }}";
+    }
+    return;
+    {% endif %}
+
+    const uri = $recommandBtn.dataset.uri;
+    // console.log(uri);
+
+    try {
+        const response = await fetch(uri, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken' : '{{ csrf_token }}'
+            }
+        });
+        const data = await response.json();
+        // console.log(data);
+
+        // 응답 상태가 200이 아닌 경우
+        if(!response.ok) {
+            alert(data.message || '추천 요청에 실패했습니다.');
+            return;
+        }
+
+        const $voteCountBadge = $recommandBtn.querySelector('span');
+
+        if($voteCountBadge) {
+            $voteCountBadge.textContent = data.vote_count;
+        }
+
+        alert(data.message);
+
+    } catch (error) {
+        console.log(error);
+        alert('추천 처리 중 오류가 발생했습니다.')
+    }
+
+    
+
+})
+
+
+
+
+
 
 // 답변 수정, 삭제 코드
 const $answerList = document.querySelector('#answer-list');

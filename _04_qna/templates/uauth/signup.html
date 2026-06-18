@@ -1,5 +1,17 @@
 {% extends "../layout/base.html" %}
 
+{% block style %}
+    <style>
+        .feedback.error {
+            color : red;
+        }
+
+        .feedback.success {
+            color : green;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
 <div class="container my-3">
   <h5 class="my-3 border-bottom pb-2">회원가입</h5>
@@ -7,13 +19,14 @@
     기본 인코딩 타입 : application/x-www-form-urlencoded
     파일 데이터 전송 시 변경할 인코딩 타입 : multipart/form-data
   -->
-  <form method="post" enctype="multipart/form-data">
+  <form name="userCreateFrm" method="post" enctype="multipart/form-data">
       {% csrf_token %}
       {% include "../layout/form_errors.html" %}
       <div class="mb-3">
           <label for="username">사용자 이름</label>
           <input type="text" class="form-control" name="username" id="username" value="{{ form.username.value | default_if_none:'' }}">
           <sub id="username-feedback" class="feedback"></sub>
+          <input type="hidden" id="id-valid" value="0">
       </div>
       <div class="mb-3">
           <label for="password1">비밀번호</label>
@@ -41,6 +54,51 @@
 {% endblock content %}
 
 {% block script %}
+<script>
+    const $username = document.querySelector('#username');
+    const $userFeedback = document.querySelector('#username-feedback');
+    const $idValid = document.querySelector('#id-valid');
+
+    $username.addEventListener('input', async (e) => {
+        const value = e.target.value;
+        // console.log(value);
+
+        // 매 입력마다 기존 상태 클래스 초기화
+        $userFeedback.classList.remove('success', 'error');
+
+        // 아이디는 4글자 이상이어야 하는 기준을 충족하지 못하면 서버로 요청을 보내지 않는다.
+        if(value.length < 4) {
+            $userFeedback.textContent = '아이디는 4글자 이상이어야 합니다.';
+            $userFeedback.classList.add('error');
+            $idValid.value = '0';
+            return;
+        }
+
+        // 서버로 아이디 중복 체크 비동기 요청
+        const response = await fetch(`{% url 'uauth:check_username' %}?username=${value}`);
+        data = await response.json();   // 응답 JSON을 JS 파싱처리
+        // console.log(data);
+
+        const {available, message} = data;
+        $userFeedback.textContent = message;
+
+        if(available) {
+            $userFeedback.classList.add('success');
+            $idValid.value = '1';
+        } else {
+            $userFeedback.classList.add('error');
+            $idValid.value = '0';
+        }
+    })
 
 
+document.userCreateFrm.addEventListener('submit', e => {
+    // 폼 제출 시 유효한 아이디를 입력했는지 확인
+    if($idValid.value != '1') {
+        alert('유효한 아이디를 입력해주세요.');
+        e.preventDefault();
+        return;
+    }
+});
+</script>
 {% endblock script %}

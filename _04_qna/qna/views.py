@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.contrib import messages
 from django.urls import reverse
+from django.views.decorators.http import require_POST, require_GET, require_http_methods
+from django.http import JsonResponse
 
 def index(request):
     # DB에서 질문 목록 조회
@@ -192,3 +194,63 @@ def answer_modify(request, answer_id):
     # 수정한 답변을 참조하는 위치로 응답하기
     url = reverse('qna:question_detail', kwargs={'question_id' : question_id})
     return redirect(f'{url}#answer_{answer.id}')
+
+@login_required(login_url='uauth:login')
+@require_POST
+def question_vote(request, question_id):
+    question = get_object_or_404(Question, id=question_id)
+
+    # 인가/정책 검사: 본인이 작성한 질문은 추천하지 못하게 처리
+    if request.user == question.author:
+        return JsonResponse({
+            'success' : False,
+            'message' : '본인이 작성한 질문은 추천할 수 없습니다.',
+            'vote_count' : question.voters.count()
+        }, status=403)
+    
+    # 이미 추천한 사용자가 다시 누르면 추천 취소
+    if question.voters.filter(id=request.user.id).exists():
+        question.voters.remove(request.user)
+        voted = False
+        message = '질문 추천을 취소했습니다.'
+    else:
+        question.voters.add(request.user)
+        voted = True
+        message = '질문을 추천했습니다.'
+
+    return JsonResponse({
+        'success' : True,
+        'message' : message,
+        'voted' : voted,
+        'vote_count' : question.voters.count()
+    })
+
+@login_required(login_url='uauth:login')
+@require_POST
+def answer_vote(request, answer_id):
+    answer = get_object_or_404(Answer, id=answer_id)
+
+    # 인가/정책 검사: 본인이 작성한 답변은 추천하지 못하게 처리
+    if request.user == answer.author:
+        return JsonResponse({
+            'success' : False,
+            'message' : '본인이 작성한 답변은 추천할 수 없습니다.',
+            'vote_count' : answer.voters.count()
+        }, status=403)
+    
+    # 이미 추천한 사용자가 다시 누르면 추천 취소
+    if answer.voters.filter(id=request.user.id).exists():
+        answer.voters.remove(request.user)
+        voted = False
+        message = '답변 추천을 취소했습니다.'
+    else:
+        answer.voters.add(request.user)
+        voted = True
+        message = '답변을 추천했습니다.'
+
+    return JsonResponse({
+        'success' : True,
+        'message' : message,
+        'voted' : voted,
+        'vote_count' : answer.voters.count()
+    })

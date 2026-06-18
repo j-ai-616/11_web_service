@@ -8,6 +8,7 @@ class Question(models.Model):
     content = models.TextField() 
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+    voters = models.ManyToManyField(User, related_name='question_voters')
 
 class Answer(models.Model):
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='answers')
@@ -15,6 +16,7 @@ class Answer(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True) 
+    voters = models.ManyToManyField(User, related_name='answer_voters')
 
 # django model form 클래스 : 사용자 입력을 위한 모델 클래스
 # - 입력 값 처리, 검증 기능 수행

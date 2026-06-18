@@ -2,8 +2,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import User 
 from .models import UserForm, UserDetail
 from django.db import transaction
+from django.http import JsonResponse
 
 # Create your views here.
 def logout(request):
@@ -46,3 +48,12 @@ def signup(request):
         form = UserForm()       # 회원 가입 폼 생성
     
     return render(request, 'uauth/signup.html', {'form':form})  # 회원 가입 페이지 렌더링
+
+def check_username(request):
+    username = request.GET.get('username')
+    is_exists = User.objects.filter(username=username).exists()
+
+    if is_exists:
+        return JsonResponse({'available': False, 'message': '이미 사용 중인 아이디입니다.'})
+    
+    return JsonResponse({'available': True, 'message': '사용 가능한 아이디입니다.'})

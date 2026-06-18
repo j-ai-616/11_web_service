@@ -1,0 +1,4 @@
+django
+langchain
+langchain-openai
+python-dotenv
