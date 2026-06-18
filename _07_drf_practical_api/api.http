@@ -1,0 +1,62 @@
+### 회원가입
+POST http://127.0.0.1:8000/api/auth/register/
+Content-Type: application/json
+
+{
+  "username": "user1",
+  "password": "testpass123",
+  "email": "user1@example.com"
+}
+
+### JWT 로그인
+POST http://127.0.0.1:8000/api/auth/token/
+Content-Type: application/json
+
+{
+  "username": "user1",
+  "password": "testpass123"
+}
+
+### 내 정보 조회
+GET http://127.0.0.1:8000/api/auth/me/
+Authorization: Bearer {{access_token}}
+
+### 질문 생성
+POST http://127.0.0.1:8000/api/questions/
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "subject": "DRF 질문입니다.",
+  "content": "Serializer와 ViewSet은 어떤 역할인가요?"
+}
+
+### 질문 목록
+GET http://127.0.0.1:8000/api/questions/
+
+### 답변 생성
+POST http://127.0.0.1:8000/api/questions/1/answers/
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "content": "Serializer는 변환과 검증, ViewSet은 API 요청 처리를 담당합니다."
+}
+
+### 채팅 세션 생성
+POST http://127.0.0.1:8000/api/chat/sessions/
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "title": "DRF 상담"
+}
+
+### 챗봇 메시지 전송
+POST http://127.0.0.1:8000/api/chat/sessions/1/send/
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "content": "JWT 인증 흐름을 설명해줘."
+}
